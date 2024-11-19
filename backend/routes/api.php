@@ -2,11 +2,23 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Models\User;
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
-
 Route::get('/users', function (Request $request) {
-    return User::all();
+    return [
+        'data' => [
+            [
+                'id' => 1,
+                'name' => 'guilherme Santos',
+                'email' => 'szguisantos@gmail.com',
+                'password' => 'password',
+                'isadmin' => true,
+            ],
+            [
+                'id' => 2,
+                'name' => 'Grasiele P P Santos',
+                'email' => 'szgra@gmail.com',
+                'password' => 'password',
+                'isadmin' => false,
+            ]
+        ]
+    ];
 });
