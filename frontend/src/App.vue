@@ -3,7 +3,10 @@ import axios from "axios";
 import '@styles/global.css';
 </script>
 <template>
-  <h1>
-    Certamente é a página de convidado
-  </h1>
+  <router-view></router-view>
 </template>
+<script>
+export default {
+  name: 'App',
+};
+</script>

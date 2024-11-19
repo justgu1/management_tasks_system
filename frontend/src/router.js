@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 // views
-import Guest from '@/views/Guest.vue';
+import Guest from '@views/Guest.vue';
 
 const routes = [
     {
