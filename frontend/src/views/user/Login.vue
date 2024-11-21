@@ -33,30 +33,27 @@ const validateForm = () => {
 
 const submitForm = async (userData) => {
     if (validateForm()) {
+        errors.value = {};
+        let message = '';
         try {
             const response = await api.post('/user/login', form.value);
-            console.log(response.token)
-            localStorage.setItem('user_token', response.token);
-            localStorage.setItem('user_name', response.user.name);
-            localStorage.setItem('user_email', response.user.email);
-            api.api.defaults.headers.common['Authorization'] = `Bearer ${response.token}`;
+            if (response.token) {
+                localStorage.setItem('user_token', response.token);
+                localStorage.setItem('user_name', response.user.name);
+                localStorage.setItem('user_email', response.user.email);
+                api.api.defaults.headers.common['Authorization'] = `Bearer ${response.token}`;
 
-            const redirect = route.query.redirect || '/dashboard';
-            router.push(redirect);
+                const redirect = route.query.redirect || '/';
+                router.push(redirect);
+            }
         } catch (error) {
             console.log(error);
-            let message = '';
-            errors.value = {};
-            switch (error.response.status) {
-                case 422:
-                    message = 'Já existe uma conta com este email.';
-                    break;
-
-                default:
-                    message = error.response.data.message;
-                    break;
+            if (error.response?.status === 401) {
+                message = 'Credenciais inválidas. Verifique o e-mail e senha.';
+            } else {
+                message = `Erro ao fazer login: ${error.response?.data?.message || 'Erro desconhecido'}`;
             }
-            errors.value.response = `Erro ao criar usuário.<br> ${message}`;
+            errors.value.response = `Erro ao criar usuário<br>${message}`
         }
     }
 };
@@ -65,6 +62,10 @@ const submitForm = async (userData) => {
     <div class="flex justify-center items-center align-center h-screen">
         <form @submit.prevent="submitForm"
             class="sm:max-w-md w-11/12 sm:w-full mx-auto p-6 border border-gray-300 rounded-lg bg-gray-50">
+            <div v-if="errors.response"
+                class=" text-center text-gray-100 py-2 px-4 bg-red-500 border border-gray-300 rounded-lg bg-gray-50 mb-4"
+                v-html="errors.response"></div>
+
             <FormGroup type="email" label="E-mail" id="email" v-model="form.email" :error="errors.email"
                 placeholder="Digite seu Email">
             </FormGroup>
@@ -73,7 +74,7 @@ const submitForm = async (userData) => {
                 placeholder="Digite sua senha">
             </FormGroup>
 
-            <Button text="Entrar" />
+            <Button type="submit" text="Entrar" />
             <Link href="/register" text="Não tem uma conta? clique aqui" />
         </form>
     </div>

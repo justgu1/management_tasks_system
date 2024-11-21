@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { reactive } from 'vue';
 
 // views
 import Login from '@views/user/Login.vue';
@@ -7,8 +8,16 @@ import Logout from '@views/user/Logout.vue';
 import Dashboard from '@views/Dashboard.vue';
 import About from '@views/About.vue';
 import Tasks from '@views/tasks/index.vue';
+import TasksAdd from '@views/tasks/add.vue';
+import TasksEdit from '@views/tasks/edit.vue';
+import TasksDelete from '@views/tasks/delete.vue';
 import NotFound from '@/views/NotFound.vue';
 import api from '@utils/api';
+
+const routeState = reactive({
+    previousRoute: null,
+});
+
 const routes = [
     {
         path: '/login',
@@ -36,23 +45,24 @@ const routes = [
         path: '/tasks',
         name: 'Tarefas',
         component: Tasks,
-        children: [
-            {
-                path: 'add',
-                name: 'Adicionar Tarefa',
-                component: About,
-            },
-            {
-                path: 'edit',
-                name: 'Editar Tarefa',
-                component: About,
-            },
-            {
-                path: 'remove',
-                name: 'Excluir Tarefa',
-                component: About,
-            },
-        ],
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/tasks/add',
+        name: 'Adicionar Tarefa',
+        component: TasksAdd,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/tasks/edit/:id',
+        name: 'Editar Tarefa',
+        component: TasksEdit,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/tasks/delete/:id',
+        name: 'Excluir Tarefa',
+        component: TasksDelete,
         meta: { requiresAuth: true },
     },
     {
@@ -64,7 +74,7 @@ const routes = [
     {
         path: '/:catchAll(.*)',
         name: 'Nao Existe',
-        component: () => import('@/views/NotFound.vue'), // Página 404
+        component: NotFound,
     },
 ];
 
@@ -74,24 +84,30 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
+    routeState.previousRoute = from;
+
+    const ignoreRoutes = ['Login', 'Register'];
+    if (ignoreRoutes.includes(to.name)) {
+        return next();
+    }
     if (to.meta.requiresAuth) {
         const token = localStorage.getItem('user_token');
 
         if (token) {
             try {
                 await api.get('/user/verify');
-                next();
+                return next();
             } catch (error) {
                 console.log(error);
                 localStorage.removeItem('user_token');
-                next({ name: 'Login', query: { redirect: to.fullPath } });
+                return next({ name: 'Login', query: { redirect: to.fullPath } });
             }
         } else {
-            next({ name: 'Login', query: { redirect: to.fullPath } });
+            return next({ name: 'Login', query: { redirect: to.fullPath } });
         }
-    } else {
-        next();
     }
+    next();
 });
 
+export { routeState };
 export default router;

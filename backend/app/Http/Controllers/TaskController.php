@@ -7,18 +7,31 @@ use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-        if ($user->isAdmin()) {
-            $tasksQuery = Task::query();
+
+        $isDashboard = $request->input('is_dashboard', false);
+
+        if ($isDashboard) {
+            if ($user->isAdmin()) {
+                $tasksQuery = Task::query();
+            } else {
+                $tasksQuery = Task::where('author', $user->id);
+            }
+
+            $tasks = $tasksQuery->get();
         } else {
-            $tasksQuery = Task::where('author', $user->id);
+            if ($user->isAdmin()) {
+                $tasksQuery = Task::query();
+            } else {
+                $tasksQuery = Task::where('author', $user->id);
+            }
+
+            $tasks = $tasksQuery->paginate(10);
         }
 
-        $tasks = $tasksQuery->paginate(10);
-
-        if (!$tasks) {
+        if ($tasks->isEmpty()) {
             return response()->json(['message' => 'Nenhuma tarefa encontrada'], 404);
         }
 
@@ -59,8 +72,8 @@ class TaskController extends Controller
         ]);
 
         $task = Task::findOrFail($id);
-
-        if ($task->author !== Auth::id()) {
+        $user = Auth::user();
+        if (!$user->isAdmin() && $task->author !== Auth::id()) {
             return response()->json(['error' => 'Você não tem permissão para editar esta tarefa.'], 403);
         }
 
@@ -72,6 +85,7 @@ class TaskController extends Controller
 
         return response()->json($task);
     }
+
     public function destroy(string $id)
     {
         $task = Task::find($id);

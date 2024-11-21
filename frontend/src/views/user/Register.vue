@@ -80,7 +80,7 @@ const submitForm = async (userData) => {
                 placeholder="Digite sua senha">
             </FormGroup>
 
-            <Button text="Cadastrar" />
+            <Button type="submit" text="Entrar" />
             <Link href="/login" text="Não tem uma conta? clique aqui" />
         </form>
     </div>

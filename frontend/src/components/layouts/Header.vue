@@ -12,7 +12,7 @@ const children = computed(() => {
 });
 const nav = computed(() => {
     return routes.filter((route) => {
-        if (route.name === 'Login' || route.name === 'Register' || route.name === 'Logout' || route.name === 'Nao Existe' || route.name === 'Adicionar Tarefa' || route.name === 'Editar Tarefa' || route.name === 'Excluir Tarefa') {
+        if (route.name === 'Login' || route.name === 'Register' || route.name === 'Logout' || route.name === 'Nao Existe' || route.name === 'Adicionar Tarefa' || route.name === 'Editar Tarefa' || route.name === 'Excluir Tarefa' || route.name === "Sobre") {
             return false;
         }
 
@@ -37,6 +37,9 @@ const nav = computed(() => {
             <div class="bottom">
                 <ul class="flex gap-4 justify-end" v-if="user.length == 0">
                     <li>
+                        <router-link :to="'/about'">Sobre</router-link>
+                    </li>
+                    <li>
                         <router-link :to="'/Login'">Login</router-link>
                     </li>
                     <li>
@@ -44,6 +47,9 @@ const nav = computed(() => {
                     </li>
                 </ul>
                 <ul class="flex gap-4" v-else>
+                    <li>
+                        <router-link :to="'/about'">Sobre</router-link>
+                    </li>
                     <li>
                         <router-link :to="'/profile'">Perfil</router-link>
                     </li>
@@ -59,9 +65,13 @@ const nav = computed(() => {
         <h2 class="text-2xl text-gray-600 pr-8">
             {{ currentRoute.name }}
         </h2>
-        <nav class="col-span-6" v-if="children.length > 0">
+        <nav class="col-span-6">
             <ul class="flex gap-4">
-                <li>
+                <li v-if="currentRoute.path === '/tasks/add' || currentRoute.path.includes('/tasks/edit/')">
+                    <router-link to="/tasks"
+                        :class="{ 'my-active-class': currentRoute.path === '/tasks' }">Tarefas</router-link>
+                </li>
+                <li v-if="currentRoute.path === '/tasks' || currentRoute.path.includes('/tasks/edit/')">
                     <router-link to="/tasks/add"
                         :class="{ 'my-active-class': currentRoute.path === '/tasks/add' }">Adicionar</router-link>
                 </li>
